@@ -6,8 +6,6 @@ import time
 import redis
 import msgpack
 
-duration = 5
-
 motVals = [30000, 30000, -30000, -30000] #Motor power values -30000 to 30000
 
 def motVal2can(Vals):
@@ -60,6 +58,6 @@ while(True):
 	print(motVal2can(getMessage()))
 	# msg = can.Message(arbitration_id=0x1ff, dlc=8, data=motVal2can(motVals), is_extended_id=False)
 	# msg = can.Message(arbitration_id=0x1ff, dlc=8, data=[39, 16, 0, 0, 0, 0, 0, 0], is_extended_id=False)
-	can0.send_periodic(msg,.01,duration)
+	can0.send(msg)
 
 os.system('sudo ifconfig can0 down')
