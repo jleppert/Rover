@@ -35,11 +35,12 @@ def motVal2can(Vals):
 					
 	return output
 
-def getMessage():
-	r = redis.Redis(
-        host='127.0.0.1',
-        port=6379)
+def getMessage(r):
 	return msgpack.unpackb(r.get('motVals'))
+
+def publishMessage(r):
+	Rmsg = can0.recv()
+	print(Rmsg)
 
 # print(motVal2can(motVals))
 
@@ -53,11 +54,21 @@ if can0status == "down\n":
 
 can0 = can.interface.Bus(channel = 'can0', bustype = 'socketcan')# socketcan_native
 
+#Creating redis object
+r = redis.Redis(
+        host='127.0.0.1',
+        port=6379)
+
 while(True):
-	msg = can.Message(arbitration_id=0x1ff, dlc=8, data=motVal2can(getMessage()), is_extended_id=False)
-	print(motVal2can(getMessage()))
+
+	#Reading from redis and sending values to motors
+	msg = can.Message(arbitration_id=0x1ff, dlc=8, data=motVal2can(getMessage(r)), is_extended_id=False)
+	# print(motVal2can(getMessage(r)))
 	# msg = can.Message(arbitration_id=0x1ff, dlc=8, data=motVal2can(motVals), is_extended_id=False)
 	# msg = can.Message(arbitration_id=0x1ff, dlc=8, data=[39, 16, 0, 0, 0, 0, 0, 0], is_extended_id=False)
 	can0.send(msg)
+
+	#Reading from motors and publishing to redis
+	publishMessage(r)
 
 os.system('sudo ifconfig can0 down')
