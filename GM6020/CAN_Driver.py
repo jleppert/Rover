@@ -39,8 +39,16 @@ def getMessage(r):
 	return msgpack.unpackb(r.get('motVals'))
 
 def publishMessage(r):
-	Rmsg = can0.recv()
-	print(Rmsg)
+	#Motor address is 0x204+ID (516+ID)
+	Rmsg = can0.recv() #This is blocking. 
+	# print(list(Rmsg.data))
+	if (Rmsg.arbitration_id == 517):
+		dat = Rmsg.data
+		rotAng = (dat[0]<<8)|(dat[1])
+		print((dat[2]<<8)|(dat[3]))
+		# print("Angle = ", int(dat[1]+dat[2],2))
+	# print(Rmsg.arbitration_id)
+	# print(Rmsg)
 
 # print(motVal2can(motVals))
 
@@ -66,7 +74,7 @@ while(True):
 	# print(motVal2can(getMessage(r)))
 	# msg = can.Message(arbitration_id=0x1ff, dlc=8, data=motVal2can(motVals), is_extended_id=False)
 	# msg = can.Message(arbitration_id=0x1ff, dlc=8, data=[39, 16, 0, 0, 0, 0, 0, 0], is_extended_id=False)
-	can0.send(msg)
+	# can0.send(msg)
 
 	#Reading from motors and publishing to redis
 	publishMessage(r)
